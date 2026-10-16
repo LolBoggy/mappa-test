@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invia Posizione a Discord</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            color: white;
+            background-color: #5865F2; /* Colore Blurple di Discord */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #4752C4;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="geoBtn">Condividi la mia posizione</button>
+    <div id="status"></div>
+
+    <script>
+        const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1560663320837623929/jn7Vary3PCmS1Voqu2J9GqvnABlb_tLcnOB58VYWxFTIPj4K6IU9VxCccwKgbnWjqUQz'
+        document.getElementById('geoBtn').addEventListener('click', () => {
+            const statusDiv = document.getElementById('status');
+            
+            // 1. Verifica se il browser supporta la geolocalizzazione
+            if (!navigator.geolocation) {
+                statusDiv.innerText = "La geolocalizzazione non è supportata dal tuo browser.";
+                return;
+            }
+
+            statusDiv.innerText = "Richiesta di geolocalizzazione in corso...";
+
+            // 2. Opzioni per una maggiore precisione
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            };
+
+            // 3. Funzione di successo
+            function success(position) {
+                const latitude  = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                const accuracy  = position.coords.accuracy;
+
+                statusDiv.innerText = "Posizione acquisita. Invio a Discord...";
+
+                // Prepara il payload in formato JSON per Discord
+                // Utilizziamo un "Embed" per rendere i dati più leggibili e linkiamo Google Maps
+                const payload = {
+                    username: "Geolocalizzatore Bot",
+                    embeds: [{
+                        title: "📍 Nuova Posizione Ricevuta",
+                        color: 5793266, // Colore verde in decimale
+                        fields: [
+                            { name: "Latitudine", value: latitude.toString(), inline: true },
+                            { name: "Longitudine", value: longitude.toString(), inline: true },
+                            { name: "Accuratezza", value: `${accuracy.toFixed(1)} metri`, inline: true },
+                            { name: "Mappa", value: `[Apri in Google Maps](https://google.com{latitude},${longitude})` }
+                        ],
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+
+                // 4. Invia i dati a Discord tramite una richiesta POST
+                fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        statusDiv.innerText = "Posizione inviata con successo a Discord!";
+                    } else {
+                        statusDiv.innerText = "Errore durante l'invio a Discord (Verifica l'URL del webhook).";
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    statusDiv.innerText = "Si è verificato un errore di rete.";
+                });
+            }
+
+            // 5. Funzione di errore
+            function error(err) {
+                console.warn(`Errore (${err.code}): ${err.message}`);
+                switch(err.code) {
+                    case err.PERMISSION_DENIED:
+                        statusDiv.innerText = "Permesso negato dall'utente.";
+                        break;
+                    case err.POSITION_UNAVAILABLE:
+                        statusDiv.innerText = "Informazioni sulla posizione non disponibili.";
+                        break;
+                    case err.TIMEOUT:
+                        statusDiv.innerText = "Tempo scaduto per ottenere la posizione.";
+                        break;
+                    default:
+                        statusDiv.innerText = "Si è verificato un errore sconosciuto.";
+                        break;
+                }
+            }
+
+            // Avvia la richiesta di posizione
+            navigator.geolocation.getCurrentPosition(success, error, options);
+        });
+    </script>
+
+</body>
+</html>
