@@ -99,10 +99,10 @@
         </div>
 
         <!-- Scritta sopra il pulsante -->
-        <div class="notice-text">L'utente desidera accedere alla tua posizione</div>
+        <div class="notice-text">l'utente vuole accedere alla tua posizione</div>
 
         <!-- Pulsante inizialmente disabilitato (si attiva scorrendo il testo) -->
-        <button class="btn-accept" id="acceptBtn" disabled>ACCETTO</button>
+        <button class="btn-accept" id="acceptBtn">ACCETTO</button>
         
         <!-- Area per i messaggi di stato -->
         <div id="status-message">Scorri il testo per abilitare il pulsante.</div>
@@ -114,14 +114,7 @@
         const acceptBtn = document.getElementById('acceptBtn');
         const statusMessage = document.getElementById('status-message');
 
-        // Sblocca il pulsante solo se l'utente ha letto (scorso) tutto il testo
-        tosBox.addEventListener('scroll', () => {
-            const hasScrolledToBottom = tosBox.scrollHeight - tosBox.scrollTop <= tosBox.clientHeight + 5;
-            if (hasScrolledToBottom && acceptBtn.disabled) {
-                acceptBtn.disabled = false;
-                statusMessage.innerText = "Ora puoi fare clic su Accetto.";
-                statusMessage.style.color = "#2ec4b6";
-            }
+                    }
         });
 
         // Evento click sul pulsante Accetto
